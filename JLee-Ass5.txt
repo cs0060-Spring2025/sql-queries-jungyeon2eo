@@ -1,0 +1,181 @@
+1) 
+Query:
+SELECT quantityOnHand
+FROM item
+WHERE itemDescription LIKE “%antibiotic%”;
+Answer: 100
+
+
+2)
+Query:
+SELECT volunteerName
+FROM volunteer
+WHERE volunteerTelephone NOT LIKE "2%"
+AND volunteerName NOT LIKE "%Jones";
+Answer: Gene Lewin
+
+
+3)
+Query:
+SELECT volunteer.volunteerName
+FROM volunteer
+JOIN assignment
+ON volunteer.volunteerId = assignment.volunteerId
+JOIN task
+ON task.taskCode = assignment.taskCode
+JOIN task_type
+ON task_type.taskTypeId = task.taskTypeId
+WHERE task_type.taskTypeName = "transporting";
+Answer: George Brewer
+
+
+4)
+Query:
+SELECT task.taskDescription
+FROM task
+LEFT JOIN assignment
+ON assignment.taskCode = task.taskCode
+WHERE assignment.volunteerId IS NULL;
+Answer: Prepare 100 food packages, Take packages to the warehouse
+
+
+5) 
+Query:
+SELECT DISTINCT package_type.packageTypeName
+FROM package_type
+JOIN package
+ON package_type.packageTypeId = package.packageTypeId
+JOIN package_contents
+ON package_contents.packageId = package.packageId
+JOIN item
+ON item.itemId = package_contents.itemId
+WHERE item.itemDescription LIKE "%bottle%";
+Answer: food and water
+
+
+6)
+Query:
+SELECT item.itemDescription
+FROM item
+LEFT JOIN package_contents
+ON item.itemId = package_contents.itemId
+WHERE package_contents.packageId IS NULL;
+Answer: bottle of antibiotics, bottle of aspirin, flashlight, pack of bandages
+
+
+7)
+Query:
+SELECT task.taskDescription
+FROM task
+JOIN assignment
+ON assignment.taskCode = task.taskCode
+JOIN volunteer
+ON volunteer.volunteerId = assignment.volunteerId
+WHERE volunteerAddress LIKE "%NJ";
+Answer: Prepare 20 children’s packages, Prepare 100 water packages, Prepare 5,000 packages
+
+
+8)
+Query:
+SELECT volunteer.volunteerName
+FROM volunteer
+JOIN assignment
+ON assignment.volunteerId = volunteer.volunteerId
+WHERE startDateTime >= "2021-01-01"
+AND startDateTime < "2021-07-01";
+Answer: Joan Simmons, Chris Jordan
+
+
+9)
+Query:
+SELECT volunteer.volunteerName
+FROM volunteer
+JOIN assignment
+ON assignment.volunteerId = volunteer.volunteerId
+JOIN task
+ON assignment.taskCode = task.taskCode
+JOIN task_type
+ON task_type.taskTypeId = task.taskTypeId
+JOIN package
+ON package.taskCode = task.taskCode
+JOIN package_contents
+ON package_contents.packageId = package.packageId
+JOIN item
+ON item.itemId = package_contents.itemId
+WHERE task_type.taskTypeName = "packing"
+AND item.itemDescription = "spam";
+Answer: none of the volunteers
+
+
+10)
+Query:
+SELECT item.itemDescription
+FROM item
+JOIN package_contents
+ON package_contents.itemId = item.itemId
+WHERE (item.itemValue * package_contents.itemQuantity) = 100;
+Answer: Baby formula
+
+
+11)
+Query:
+SELECT task_status.taskStatusName, COUNT(DISTINCT assignment.volunteerId) AS number_of_volunteers
+FROM task_status
+JOIN task
+ON task.taskStatusId = task_status.taskStatusId
+JOIN assignment
+ON task.taskCode = assignment.taskCode
+GROUP BY task_status.taskStatusName
+ORDER BY number_of_volunteers DESC;
+Answer: open 4, closed 3, ongoing 2, pending 1
+
+
+12)
+Query:
+SELECT task.taskCode, SUM(package.packageWeight) as package_weight
+FROM task
+JOIN package
+ON package.taskCode = task.taskCode
+GROUP BY task.taskCode
+ORDER BY package_weight DESC
+LIMIT 1;
+Answer: taskCode 106, weight 308
+
+
+13)
+Query:
+SELECT COUNT(task.taskCode)
+FROM task
+JOIN task_type
+ON task_type.taskTypeId = task.taskTypeId
+WHERE task_type.taskTypeName != "packing";
+Answer: 3
+
+
+14)
+Query
+SELECT item.itemDescription
+FROM item
+JOIN package_contents
+ON package_contents.itemId = item.itemId
+JOIN package
+ON package.packageId = package_contents.packageId
+JOIN task
+ON task.taskCode = package.taskCode
+JOIN assignment
+ON assignment.taskCode = task.taskCode
+GROUP BY item.itemId
+HAVING COUNT(DISTINCT assignment.volunteerId) < 3;
+Answer: can of spam, dried fruit, tent, men’s coat, women’s coat, sleeping bag
+
+
+15)
+Query:
+SELECT package_contents.packageId, SUM(item.itemValue * package_contents.itemQuantity) AS total_value
+FROM package_contents
+JOIN item
+ON item.itemId = package_contents.itemId
+GROUP BY package_contents.packageId
+HAVING total_value > 100
+ORDER BY total_value ASC;
+Answer: (packageId, total_value), (6, 150), (2, 151), (4, 350), (10, 750), (5, 1420)
